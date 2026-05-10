@@ -18,6 +18,7 @@ builder.Services.AddInfrastructure(builder.Configuration);
 
 
 builder.Services.AddScoped<IProductoService, ProductoService>();
+builder.Services.AddScoped<IVentaService, VentaService>();
 
 builder.Services.AddCors(options =>
 {

@@ -25,10 +25,11 @@ namespace Infraestructure
                 var interceptor = sp.GetRequiredService<AuditoriaInterceptor>();
 
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
-                       .AddInterceptors(interceptor); // Inyectamos el interceptor aquí!
+                       .AddInterceptors(interceptor);
             });
 
             services.AddScoped<IProductoRepository, Repositories.ProductoRepository>();
+            services.AddScoped<IVentaRepository, Repositories.VentaRepository>();
 
             return services;
         }
