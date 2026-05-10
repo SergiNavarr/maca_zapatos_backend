@@ -30,6 +30,7 @@ namespace Infraestructure
 
             services.AddScoped<IProductoRepository, Repositories.ProductoRepository>();
             services.AddScoped<IVentaRepository, Repositories.VentaRepository>();
+            services.AddScoped<IUsuarioRepository, Repositories.UsuarioRepository>();
 
             return services;
         }
