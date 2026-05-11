@@ -20,11 +20,15 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 // 2. Inyectar toda la Infraestructura (DbContext, Interceptores, Postgres)
 builder.Services.AddInfrastructure(builder.Configuration);
 
-
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IVentaService, VentaService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUsuarioService, UsuarioService>();
+builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<IMarcaService, MarcaService>();
+builder.Services.AddScoped<ITalleService, TalleService>();
+builder.Services.AddScoped<IColorService, ColorService>();
 
 builder.Services.AddCors(options =>
 {

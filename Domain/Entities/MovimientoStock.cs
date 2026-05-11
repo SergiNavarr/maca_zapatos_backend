@@ -14,8 +14,8 @@ namespace Domain.Entities
         public int VarianteProductoId { get; set; }
         public VarianteProducto VarianteProducto { get; set; } = null!;
 
-        public int UsuarioId { get; set; }
-        public Usuario Usuario { get; set; } = null!;
+        public int? UsuarioId { get; set; }
+        public Usuario? Usuario { get; set; } = null!;
 
         public TipoMovimientoStock TipoMovimiento { get; set; }
         public int Cantidad { get; set; }

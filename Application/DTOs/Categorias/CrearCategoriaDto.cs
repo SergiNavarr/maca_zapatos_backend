@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Interfaces
+namespace Application.DTOs.Categorias
 {
-    public interface ICurrentUserService
+    public class CrearCategoriaDto
     {
-        int ObtenerUsuarioIdActual();
+        public string Nombre { get; set; } = string.Empty;
     }
 }

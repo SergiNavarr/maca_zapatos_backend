@@ -14,7 +14,6 @@ namespace Infraestructure.Repositories
     {
         private readonly AppDbContext _context;
 
-        // Aquí sí podemos usar el DbContext
         public ProductoRepository(AppDbContext context)
         {
             _context = context;
@@ -32,6 +31,18 @@ namespace Infraestructure.Repositories
                 .AsNoTracking()
                 .Where(v => v.Stock > 0 && v.FechaEliminacion == null)
                 .ToListAsync();
+        }
+
+        public async Task AgregarProductoConVariantesAsync(Producto producto)
+        {
+            await _context.Productos.AddAsync(producto);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<bool> ExisteSKUAsync(string sku)
+        {
+            return await _context.VariantesProducto
+                .AnyAsync(v => v.SKU.ToLower() == sku.ToLower() && v.FechaEliminacion == null);
         }
     }
 }

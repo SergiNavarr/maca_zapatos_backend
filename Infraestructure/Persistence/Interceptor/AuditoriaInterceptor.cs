@@ -7,8 +7,8 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.Json;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Infraestructure.Persistence.Interceptor
@@ -27,7 +27,7 @@ namespace Infraestructure.Persistence.Interceptor
             var context = eventData.Context;
             if (context == null) return base.SavingChangesAsync(eventData, result, cancellationToken);
 
-            var userId = _currentUserService.GetUserId() ?? 1; // Por defecto 1 (Admin) temporalmente
+            var userId = _currentUserService.ObtenerUsuarioIdActual();
             var auditLogs = new List<AuditoriaLog>();
 
             foreach (var entry in context.ChangeTracker.Entries())
@@ -39,9 +39,15 @@ namespace Infraestructure.Persistence.Interceptor
                     baseEntity.FechaEliminacion = DateTime.UtcNow;
                 }
 
-                // Ignoramos los logs de auditoría para no hacer un bucle infinito
+                // Ignoramos los logs de auditoría y evitamos loguear entidades sin cambios
                 if (entry.Entity is AuditoriaLog || entry.State == EntityState.Detached || entry.State == EntityState.Unchanged)
                     continue;
+
+                // Si el usuario es 0 (no hay token válido), frenamos la transacción por seguridad.
+                if (userId == 0)
+                {
+                    throw new UnauthorizedAccessException("Se detectó un intento de modificación en la base de datos sin un usuario autenticado válido.");
+                }
 
                 // 2. Creación del Log de Auditoría
                 var auditLog = new AuditoriaLog
@@ -57,19 +63,21 @@ namespace Infraestructure.Persistence.Interceptor
                     }
                 };
 
-                // Intentamos capturar el Id de la entidad (si ya existe)
+                // Intentamos capturar el Id de la entidad 
                 if (entry.Properties.Any(p => p.Metadata.Name == "Id"))
                 {
                     var idProp = entry.Property("Id");
                     if (idProp.CurrentValue != null) auditLog.EntidadId = (int)idProp.CurrentValue;
                 }
 
+                // Valores Anteriores
                 if (entry.State == EntityState.Modified)
                 {
                     var oldValues = entry.Properties.Where(p => p.IsModified).ToDictionary(p => p.Metadata.Name, p => p.OriginalValue);
                     auditLog.ValoresAnteriores = JsonSerializer.Serialize(oldValues);
                 }
 
+                // Valores Nuevos
                 var newValues = entry.Properties.Where(p => entry.State == EntityState.Added || p.IsModified).ToDictionary(p => p.Metadata.Name, p => p.CurrentValue);
                 auditLog.ValoresNuevos = JsonSerializer.Serialize(newValues);
 

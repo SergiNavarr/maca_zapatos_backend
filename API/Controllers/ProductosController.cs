@@ -1,4 +1,5 @@
-﻿using Application.Interfaces;
+﻿using Application.DTOs.Productos;
+using Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -21,6 +22,22 @@ namespace API.Controllers
         {
             var productos = await _productoService.ObtenerProductosParaPOSAsync();
             return Ok(productos);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CrearProductoCompleto([FromBody] CrearProductoCompletoDto dto)
+        {
+            try
+            {
+                var id = await _productoService.CrearProductoCompletoAsync(dto);
+                // Retornamos un 200 OK con el ID del nuevo producto
+                return Ok(new { Mensaje = "Producto y stock inicial ingresados con éxito", ProductoId = id });
+            }
+            catch (Exception ex)
+            {
+                // Si alguna validación de negocio falla (ej: SKU repetido), devolvemos 400 Bad Request
+                return BadRequest(new { Mensaje = ex.Message });
+            }
         }
     }
 }

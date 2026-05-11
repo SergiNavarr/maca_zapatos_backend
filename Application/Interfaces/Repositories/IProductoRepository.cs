@@ -10,5 +10,7 @@ namespace Application.Interfaces.Repositories
     public interface IProductoRepository
     {
         Task<IEnumerable<VarianteProducto>> ObtenerVariantesConStockAsync();
+        Task AgregarProductoConVariantesAsync(Producto producto);
+        Task<bool> ExisteSKUAsync(string sku);
     }
 }

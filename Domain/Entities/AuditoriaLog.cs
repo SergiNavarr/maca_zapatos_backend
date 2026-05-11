@@ -10,8 +10,8 @@ namespace Domain.Entities
     public class AuditoriaLog
     {
         public int Id { get; set; }
-        public int UsuarioId { get; set; }
-        public Usuario Usuario { get; set; } = null!;
+        public int? UsuarioId { get; set; }
+        public Usuario? Usuario { get; set; } = null!;
 
         public string EntidadAfectada { get; set; } = string.Empty;
         public int EntidadId { get; set; }

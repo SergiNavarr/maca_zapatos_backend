@@ -31,6 +31,10 @@ namespace Infraestructure
             services.AddScoped<IProductoRepository, Repositories.ProductoRepository>();
             services.AddScoped<IVentaRepository, Repositories.VentaRepository>();
             services.AddScoped<IUsuarioRepository, Repositories.UsuarioRepository>();
+            services.AddScoped<ICategoriaRepository, Repositories.CategoriaRepository>();
+            services.AddScoped<IMarcaRepository, Repositories.MarcaRepository>();
+            services.AddScoped<ITalleRepository, Repositories.TalleRepository>();
+            services.AddScoped<IColorRepository, Repositories.ColorRepository>();
 
             return services;
         }

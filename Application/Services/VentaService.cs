@@ -24,9 +24,13 @@ namespace Application.Services
 
         public async Task<int> ProcesarVentaAsync(CrearVentaDto dto)
         {
-            // 1. Obtenemos quién es el vendedor (Por ahora siempre es el 1, luego será con JWT)
-            var usuarioId = _currentUserService.GetUserId()
-                ?? throw new UnauthorizedAccessException("Usuario no autenticado.");
+            // 1. Obtenemos quién es el vendedor leyendo el Token JWT
+            var usuarioId = _currentUserService.ObtenerUsuarioIdActual();
+
+            if (usuarioId == 0)
+            {
+                throw new UnauthorizedAccessException("Usuario no autenticado.");
+            }
 
             // 2. Buscamos en la BD los productos que nos mandó el carrito
             var varianteIds = dto.Detalles.Select(d => d.VarianteId).ToList();

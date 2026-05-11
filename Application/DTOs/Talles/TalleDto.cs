@@ -1,0 +1,16 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Application.DTOs.Talles
+{
+    public class TalleDto
+    {
+        public int Id { get; set; }
+        public string Valor { get; set; } = string.Empty;
+        public int CategoriaId { get; set; }
+        public string CategoriaNombre { get; set; } = string.Empty;
+    }
+}
