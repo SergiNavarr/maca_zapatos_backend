@@ -66,5 +66,33 @@ namespace API.Controllers
                 return BadRequest(new { Mensaje = ex.Message });
             }
         }
+
+        [HttpGet("inventario")]
+        public async Task<IActionResult> GetInventarioFisico()
+        {
+            try
+            {
+                var inventario = await _productoService.ObtenerInventarioFisicoAsync();
+                return Ok(inventario);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
+            }
+        }
+
+        [HttpPost("inventario/ajustar")]
+        public async Task<IActionResult> AjustarStock([FromBody] AjustarStockDto dto)
+        {
+            try
+            {
+                await _productoService.AjustarStockAsync(dto);
+                return Ok(new { Mensaje = "Stock ajustado correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
+            }
+        }
     }
 }

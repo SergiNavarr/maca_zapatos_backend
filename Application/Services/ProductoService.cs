@@ -143,4 +143,30 @@ public class ProductoService : IProductoService
                 }).ToList()
         };
     }
+
+    public async Task<IEnumerable<InventarioFisicoDto>> ObtenerInventarioFisicoAsync()
+    {
+        var variantes = await _repository.ObtenerInventarioFisicoAsync();
+
+        return variantes.Select(v => new InventarioFisicoDto
+        {
+            VarianteId = v.Id,
+            ProductoNombre = v.Producto.Nombre,
+            Marca = v.Producto.Marca.Nombre,
+            Categoria = v.Producto.Categoria.Nombre,
+            SKU = v.SKU,
+            Talle = v.Talle.Valor,
+            Color = v.Color.Nombre,
+            ColorHex = v.Color.CodigoHex,
+            Stock = v.Stock
+        }).OrderBy(v => v.ProductoNombre).ThenBy(v => v.Talle).ToList();
+    }
+
+    public async Task AjustarStockAsync(AjustarStockDto dto)
+    {
+        var usuarioId = _currentUserService.ObtenerUsuarioIdActual();
+
+        // Pasamos el ID, o null si por alguna razón no hay sesión
+        await _repository.AjustarStockAsync(dto.VarianteId, dto.Cantidad, dto.TipoMovimiento, dto.Motivo, usuarioId > 0 ? usuarioId : null);
+    }
 }

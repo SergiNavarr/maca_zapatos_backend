@@ -14,5 +14,7 @@ namespace Application.Interfaces
         Task<int> CrearProductoCompletoAsync(CrearProductoCompletoDto dto);
         Task<IEnumerable<ProductoMaestroDto>> ObtenerProductosMaestrosAsync();
         Task<ProductoDetalleDto?> ObtenerProductoDetalleAsync(int id);
+        Task<IEnumerable<InventarioFisicoDto>> ObtenerInventarioFisicoAsync();
+        Task AjustarStockAsync(AjustarStockDto dto);
     }
 }
