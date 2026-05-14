@@ -12,7 +12,7 @@ namespace Domain.Entities
         public int Id { get; set; }
 
         public int VarianteProductoId { get; set; }
-        public VarianteProducto VarianteProducto { get; set; } = null!;
+        public VarianteProducto? VarianteProducto { get; set; } = null!;
 
         public int? UsuarioId { get; set; }
         public Usuario? Usuario { get; set; } = null!;

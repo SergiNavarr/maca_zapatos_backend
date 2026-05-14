@@ -29,6 +29,7 @@ builder.Services.AddScoped<ICategoriaService, CategoriaService>();
 builder.Services.AddScoped<IMarcaService, MarcaService>();
 builder.Services.AddScoped<ITalleService, TalleService>();
 builder.Services.AddScoped<IColorService, ColorService>();
+builder.Services.AddScoped<IGastoService, GastoService>();
 
 builder.Services.AddCors(options =>
 {

@@ -26,6 +26,7 @@ namespace Infraestructure.Persistence
         public DbSet<MovimientoStock> MovimientosStock { get; set; }
         public DbSet<Venta> Ventas { get; set; }
         public DbSet<DetalleVenta> DetallesVenta { get; set; }
+        public DbSet<Gasto> Gastos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -39,6 +40,10 @@ namespace Infraestructure.Persistence
             modelBuilder.Entity<AuditoriaLog>()
                 .Property(a => a.ValoresNuevos)
                 .HasColumnType("jsonb");
+
+            modelBuilder.Entity<Gasto>()
+                .Property(g => g.Monto)
+                .HasPrecision(18, 2);
 
             // 2. Filtro Global para Soft Deletes
             // Usamos reflection y Expression Trees para aplicar el filtro a todas las clases que hereden de BaseEntity

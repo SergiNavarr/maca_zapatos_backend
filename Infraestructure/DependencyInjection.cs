@@ -35,6 +35,7 @@ namespace Infraestructure
             services.AddScoped<IMarcaRepository, Repositories.MarcaRepository>();
             services.AddScoped<ITalleRepository, Repositories.TalleRepository>();
             services.AddScoped<IColorRepository, Repositories.ColorRepository>();
+            services.AddScoped<IGastoRepository, Repositories.GastoRepository>();
 
             return services;
         }
