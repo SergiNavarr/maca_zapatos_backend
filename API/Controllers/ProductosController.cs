@@ -17,6 +17,20 @@ namespace API.Controllers
             _productoService = productoService;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetProductosMaestros()
+        {
+            try
+            {
+                var productos = await _productoService.ObtenerProductosMaestrosAsync();
+                return Ok(productos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
+            }
+        }
+
         [HttpGet("pos")]
         public async Task<IActionResult> GetProductosParaVenta()
         {
@@ -30,12 +44,25 @@ namespace API.Controllers
             try
             {
                 var id = await _productoService.CrearProductoCompletoAsync(dto);
-                // Retornamos un 200 OK con el ID del nuevo producto
                 return Ok(new { Mensaje = "Producto y stock inicial ingresados con éxito", ProductoId = id });
             }
             catch (Exception ex)
             {
-                // Si alguna validación de negocio falla (ej: SKU repetido), devolvemos 400 Bad Request
+                return BadRequest(new { Mensaje = ex.Message });
+            }
+        }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetProductoDetalle(int id)
+        {
+            try
+            {
+                var producto = await _productoService.ObtenerProductoDetalleAsync(id);
+                if (producto == null) return NotFound(new { Mensaje = "Producto no encontrado" });
+                return Ok(producto);
+            }
+            catch (Exception ex)
+            {
                 return BadRequest(new { Mensaje = ex.Message });
             }
         }

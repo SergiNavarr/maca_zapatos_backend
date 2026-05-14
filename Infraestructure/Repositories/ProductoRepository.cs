@@ -44,5 +44,25 @@ namespace Infraestructure.Repositories
             return await _context.VariantesProducto
                 .AnyAsync(v => v.SKU.ToLower() == sku.ToLower() && v.FechaEliminacion == null);
         }
+        public async Task<IEnumerable<Producto>> ObtenerProductosMaestrosAsync()
+        {
+            return await _context.Productos
+                .Include(p => p.Marca)
+                .Include(p => p.Categoria)
+                .Where(p => p.FechaEliminacion == null)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+        public async Task<Producto?> ObtenerProductoDetalleAsync(int id)
+        {
+            return await _context.Productos
+                .Include(p => p.Marca)
+                .Include(p => p.Categoria)
+                .Include(p => p.Variantes)
+                    .ThenInclude(v => v.Talle)
+                .Include(p => p.Variantes)
+                    .ThenInclude(v => v.Color)
+                .FirstOrDefaultAsync(p => p.Id == id && p.FechaEliminacion == null);
+        }
     }
 }

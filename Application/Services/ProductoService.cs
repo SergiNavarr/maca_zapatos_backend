@@ -99,4 +99,48 @@ public class ProductoService : IProductoService
 
         return nuevoProducto.Id;
     }
+
+    public async Task<IEnumerable<ProductoMaestroDto>> ObtenerProductosMaestrosAsync()
+    {
+        var productos = await _repository.ObtenerProductosMaestrosAsync();
+
+        return productos.Select(p => new ProductoMaestroDto
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Marca = p.Marca.Nombre,
+            Categoria = p.Categoria.Nombre,
+            PrecioBase = p.PrecioBase,
+            ImagenUrl = p.ImagenUrl
+        }).OrderByDescending(p => p.Id).ToList();
+    }
+
+    public async Task<ProductoDetalleDto?> ObtenerProductoDetalleAsync(int id)
+    {
+        var p = await _repository.ObtenerProductoDetalleAsync(id);
+
+        if (p == null) return null;
+
+        return new ProductoDetalleDto
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion ?? "",
+            Marca = p.Marca.Nombre,
+            Categoria = p.Categoria.Nombre,
+            PrecioBase = p.PrecioBase,
+            ImagenUrl = p.ImagenUrl,
+            Variantes = p.Variantes
+                .Where(v => v.FechaEliminacion == null)
+                .Select(v => new VarianteDetalleDto
+                {
+                    Id = v.Id,
+                    Talle = v.Talle.Valor,
+                    Color = v.Color.Nombre,
+                    ColorHex = v.Color.CodigoHex,
+                    SKU = v.SKU,
+                    Stock = v.Stock
+                }).ToList()
+        };
+    }
 }

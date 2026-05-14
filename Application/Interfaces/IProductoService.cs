@@ -12,5 +12,7 @@ namespace Application.Interfaces
     {
         Task<IEnumerable<ProductoParaVentaDto>> ObtenerProductosParaPOSAsync();
         Task<int> CrearProductoCompletoAsync(CrearProductoCompletoDto dto);
+        Task<IEnumerable<ProductoMaestroDto>> ObtenerProductosMaestrosAsync();
+        Task<ProductoDetalleDto?> ObtenerProductoDetalleAsync(int id);
     }
 }
