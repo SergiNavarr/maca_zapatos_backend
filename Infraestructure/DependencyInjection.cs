@@ -1,4 +1,5 @@
-﻿using Application.Interfaces.Repositories;
+﻿using Application.Interfaces;
+using Application.Interfaces.Repositories;
 using Infraestructure.Persistence;
 using Infraestructure.Persistence.Interceptor;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,7 @@ namespace Infraestructure
             services.AddScoped<ITalleRepository, Repositories.TalleRepository>();
             services.AddScoped<IColorRepository, Repositories.ColorRepository>();
             services.AddScoped<IGastoRepository, Repositories.GastoRepository>();
+            services.AddScoped<IImagenService, Services.CloudinaryService>();
 
             return services;
         }
