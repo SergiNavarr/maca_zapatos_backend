@@ -16,5 +16,6 @@ namespace Application.Interfaces
         Task<ProductoDetalleDto?> ObtenerProductoDetalleAsync(int id);
         Task<IEnumerable<InventarioFisicoDto>> ObtenerInventarioFisicoAsync();
         Task AjustarStockAsync(AjustarStockDto dto);
+        Task ActualizarProductoCompletoAsync(int id, ActualizarProductoDto dto);
     }
 }

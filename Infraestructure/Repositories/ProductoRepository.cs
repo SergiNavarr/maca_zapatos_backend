@@ -116,5 +116,11 @@ namespace Infraestructure.Repositories
 
             await _context.SaveChangesAsync();
         }
+
+        public async Task ActualizarProductoAsync(Producto producto)
+        {
+            _context.Productos.Update(producto);
+            await _context.SaveChangesAsync();
+        }
     }
 }

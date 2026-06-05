@@ -17,5 +17,6 @@ namespace Application.Interfaces.Repositories
         Task<Producto?> ObtenerProductoDetalleAsync(int id);
         Task<IEnumerable<VarianteProducto>> ObtenerInventarioFisicoAsync();
         Task AjustarStockAsync(int varianteId, int cantidad, TipoMovimientoStock tipo, string motivo, int? usuarioId);
+        Task ActualizarProductoAsync(Producto producto);
     }
 }

@@ -94,5 +94,19 @@ namespace API.Controllers
                 return BadRequest(new { Mensaje = ex.Message });
             }
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> ActualizarProducto(int id, [FromBody] ActualizarProductoDto dto)
+        {
+            try
+            {
+                await _productoService.ActualizarProductoCompletoAsync(id, dto);
+                return Ok(new { Mensaje = "Producto actualizado exitosamente" });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { Mensaje = ex.Message });
+            }
+        }
     }
 }

@@ -39,19 +39,14 @@ public class ProductoService : IProductoService
     public async Task<int> CrearProductoCompletoAsync(CrearProductoCompletoDto dto)
     {
         if (!dto.Variantes.Any())
-        {
             throw new Exception("El producto debe tener al menos una variante.");
-        }
 
         foreach (var variante in dto.Variantes)
         {
             if (await _repository.ExisteSKUAsync(variante.SKU))
-            {
                 throw new Exception($"El código SKU '{variante.SKU}' ya se encuentra registrado.");
-            }
         }
 
-        // 2. Obtenemos el ID del empleado que está haciendo la carga
         var usuarioActualId = _currentUserService.ObtenerUsuarioIdActual();
 
         var nuevoProducto = new Producto
@@ -99,6 +94,77 @@ public class ProductoService : IProductoService
 
         return nuevoProducto.Id;
     }
+
+    public async Task ActualizarProductoCompletoAsync(int id, ActualizarProductoDto dto)
+    {
+        // 1. Obtenemos el producto de la BD 
+        var productoExistente = await _repository.ObtenerProductoDetalleAsync(id);
+        if (productoExistente == null)
+            throw new Exception($"No se encontró el producto con ID {id}.");
+
+        // 2. Actualizamos los datos maestros
+        productoExistente.CategoriaId = dto.CategoriaId;
+        productoExistente.MarcaId = dto.MarcaId;
+        productoExistente.Nombre = dto.Nombre;
+        productoExistente.Descripcion = dto.Descripcion;
+        productoExistente.ImagenUrl = dto.ImagenUrl;
+        productoExistente.PrecioBase = dto.PrecioBase;
+        productoExistente.FechaActualizacion = DateTime.UtcNow;
+
+        // 3. Procesamos las Variantes
+        var variantesDtoIds = dto.Variantes.Where(v => v.Id.HasValue && v.Id > 0).Select(v => v.Id.Value).ToList();
+
+        // 3a. Eliminación lógica de variantes que el usuario sacó del frontend
+        foreach (var varExistente in productoExistente.Variantes.Where(v => v.FechaEliminacion == null))
+        {
+            if (!variantesDtoIds.Contains(varExistente.Id))
+            {
+                varExistente.FechaEliminacion = DateTime.UtcNow;
+            }
+        }
+
+        // 3b. Actualizar existentes y agregar nuevas
+        foreach (var vDto in dto.Variantes)
+        {
+            if (vDto.Id.HasValue && vDto.Id.Value > 0)
+            {
+                // La variante ya existía, la buscamos y actualizamos
+                var varExistente = productoExistente.Variantes.FirstOrDefault(v => v.Id == vDto.Id.Value);
+                if (varExistente != null)
+                {
+                    // Validar si le cambiaron el SKU por uno que ya pertenece a otro zapato
+                    if (varExistente.SKU != vDto.SKU && await _repository.ExisteSKUAsync(vDto.SKU))
+                        throw new Exception($"El código SKU '{vDto.SKU}' ya está en uso en otro producto.");
+
+                    varExistente.TalleId = vDto.TalleId;
+                    varExistente.ColorId = vDto.ColorId;
+                    varExistente.SKU = vDto.SKU;
+                    varExistente.FechaActualizacion = DateTime.UtcNow;
+                }
+            }
+            else
+            {
+                // Es una variante completamente nueva agregada en la edición
+                if (await _repository.ExisteSKUAsync(vDto.SKU))
+                    throw new Exception($"El código SKU '{vDto.SKU}' ya está en uso.");
+
+                var nuevaVariante = new VarianteProducto
+                {
+                    TalleId = vDto.TalleId,
+                    ColorId = vDto.ColorId,
+                    SKU = vDto.SKU,
+                    Stock = 0, // Las variantes nuevas nacen en 0. Para sumarle stock se usa "AjustarStock".
+                    FechaCreacion = DateTime.UtcNow,
+                    FechaActualizacion = DateTime.UtcNow,
+                };
+                productoExistente.Variantes.Add(nuevaVariante);
+            }
+        }
+
+        // 4. Guardamos los cambios
+        await _repository.ActualizarProductoAsync(productoExistente);
+    }
+    // -------------------------------------
 
     public async Task<IEnumerable<ProductoMaestroDto>> ObtenerProductosMaestrosAsync()
     {
@@ -165,8 +231,6 @@ public class ProductoService : IProductoService
     public async Task AjustarStockAsync(AjustarStockDto dto)
     {
         var usuarioId = _currentUserService.ObtenerUsuarioIdActual();
-
-        // Pasamos el ID, o null si por alguna razón no hay sesión
         await _repository.AjustarStockAsync(dto.VarianteId, dto.Cantidad, dto.TipoMovimiento, dto.Motivo, usuarioId > 0 ? usuarioId : null);
     }
 }

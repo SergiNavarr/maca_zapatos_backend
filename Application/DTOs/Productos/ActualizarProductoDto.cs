@@ -8,12 +8,12 @@ namespace Application.DTOs.Productos
 {
     public class ActualizarProductoDto
     {
+        public int CategoriaId { get; set; }
+        public int MarcaId { get; set; }
         public string Nombre { get; set; } = string.Empty;
-        public string Marca { get; set; } = string.Empty;
-        public string Categoria { get; set; } = string.Empty;
-        public string Talle { get; set; } = string.Empty;
-        public string Color { get; set; } = string.Empty;
-        public decimal Precio { get; set; }
+        public string? Descripcion { get; set; }
         public string? ImagenUrl { get; set; }
+        public decimal PrecioBase { get; set; }
+        public List<ActualizarVarianteDto> Variantes { get; set; } = new();
     }
 }
