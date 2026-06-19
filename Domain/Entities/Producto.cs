@@ -16,6 +16,7 @@ namespace Domain.Entities
         public Marca Marca { get; set; } = null!;
 
         public string Nombre { get; set; } = string.Empty;
+        public string? SkuBase { get; set; }
         public string? Descripcion { get; set; }
         public string? ImagenUrl { get; set; }
         public decimal PrecioBase { get; set; }

@@ -13,6 +13,7 @@ namespace Application.Interfaces.Repositories
         Task<IEnumerable<VarianteProducto>> ObtenerVariantesConStockAsync();
         Task AgregarProductoConVariantesAsync(Producto producto);
         Task<bool> ExisteSKUAsync(string sku);
+        Task<bool> ExisteSkuBaseAsync(string skuBaseNormalizado);
         Task<IEnumerable<Producto>> ObtenerProductosMaestrosAsync();
         Task<Producto?> ObtenerProductoDetalleAsync(int id);
         Task<IEnumerable<VarianteProducto>> ObtenerInventarioFisicoAsync();

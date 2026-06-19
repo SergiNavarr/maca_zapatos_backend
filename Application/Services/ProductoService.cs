@@ -10,13 +10,26 @@ namespace Application.Services;
 public class ProductoService : IProductoService
 {
     private readonly IProductoRepository _repository;
+    private readonly ITalleRepository _talleRepository;
+    private readonly IColorRepository _colorRepository;
     private readonly ICurrentUserService _currentUserService;
 
-    public ProductoService(IProductoRepository repository, ICurrentUserService currentUserService)
+    public ProductoService(
+        IProductoRepository repository,
+        ITalleRepository talleRepository,
+        IColorRepository colorRepository,
+        ICurrentUserService currentUserService)
     {
         _repository = repository;
+        _talleRepository = talleRepository;
+        _colorRepository = colorRepository;
         _currentUserService = currentUserService;
     }
+
+    // Normalización compartida: misma regla para el SkuBase persistido y para los SKU
+    // de variante, de modo que las comparaciones de unicidad sean consistentes.
+    private static string NormalizarSku(string valor) =>
+        (valor ?? string.Empty).ToUpperInvariant().Replace(" ", "");
 
     public async Task<IEnumerable<ProductoParaVentaDto>> ObtenerProductosParaPOSAsync()
     {
@@ -41,10 +54,35 @@ public class ProductoService : IProductoService
         if (!dto.Variantes.Any())
             throw new Exception("El producto debe tener al menos una variante.");
 
-        foreach (var variante in dto.Variantes)
+        // 1. Validar y normalizar el código base del producto.
+        if (string.IsNullOrWhiteSpace(dto.SkuBase))
+            throw new Exception("El código base (SkuBase) es obligatorio.");
+
+        var skuBaseNormalizado = NormalizarSku(dto.SkuBase.Trim());
+        if (skuBaseNormalizado.Length == 0)
+            throw new Exception("El código base (SkuBase) es obligatorio.");
+
+        // 2. Unicidad del código base: comparación exacta contra otros productos.
+        if (await _repository.ExisteSkuBaseAsync(skuBaseNormalizado))
+            throw new Exception($"El código base '{dto.SkuBase}' ya está en uso en otro producto.");
+
+        // 3. Resolver talles y colores por ID (sin N+1: una sola búsqueda por ID distinto).
+        var talles = new Dictionary<int, string>();
+        foreach (var talleId in dto.Variantes.Select(v => v.TalleId).Distinct())
         {
-            if (await _repository.ExisteSKUAsync(variante.SKU))
-                throw new Exception($"El código SKU '{variante.SKU}' ya se encuentra registrado.");
+            var talle = await _talleRepository.ObtenerPorIdAsync(talleId);
+            if (talle == null)
+                throw new Exception($"El talle con ID {talleId} no existe.");
+            talles[talleId] = talle.Valor;
+        }
+
+        var colores = new Dictionary<int, string>();
+        foreach (var colorId in dto.Variantes.Select(v => v.ColorId).Distinct())
+        {
+            var color = await _colorRepository.ObtenerPorIdAsync(colorId);
+            if (color == null)
+                throw new Exception($"El color con ID {colorId} no existe.");
+            colores[colorId] = color.Nombre;
         }
 
         var usuarioActualId = _currentUserService.ObtenerUsuarioIdActual();
@@ -54,6 +92,7 @@ public class ProductoService : IProductoService
             CategoriaId = dto.CategoriaId,
             MarcaId = dto.MarcaId,
             Nombre = dto.Nombre,
+            SkuBase = skuBaseNormalizado,
             Descripcion = dto.Descripcion,
             ImagenUrl = dto.ImagenUrl,
             PrecioBase = dto.PrecioBase,
@@ -62,13 +101,26 @@ public class ProductoService : IProductoService
             Variantes = new List<VarianteProducto>()
         };
 
+        // Detecta colisiones entre las propias variantes del payload (mismo talle+color).
+        var skusGenerados = new HashSet<string>();
+
         foreach (var vDto in dto.Variantes)
         {
+            // 4. Generar el SKU de la variante: {SkuBase}-{talle}-{color} en MAYÚSCULAS y sin espacios.
+            var sku = NormalizarSku($"{skuBaseNormalizado}-{talles[vDto.TalleId]}-{colores[vDto.ColorId]}");
+
+            if (!skusGenerados.Add(sku))
+                throw new Exception($"Hay variantes repetidas que generan el mismo SKU '{sku}'. Revisá talle y color duplicados.");
+
+            // 5. Salvaguarda: que el SKU generado no choque con uno ya existente en la base.
+            if (await _repository.ExisteSKUAsync(sku))
+                throw new Exception($"El código SKU '{sku}' ya se encuentra registrado.");
+
             var nuevaVariante = new VarianteProducto
             {
                 TalleId = vDto.TalleId,
                 ColorId = vDto.ColorId,
-                SKU = vDto.SKU,
+                SKU = sku,
                 Stock = vDto.StockInicial,
                 FechaActualizacion = DateTime.UtcNow,
                 FechaCreacion = DateTime.UtcNow,

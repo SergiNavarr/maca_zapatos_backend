@@ -45,6 +45,14 @@ namespace Infraestructure.Repositories
             return await _context.VariantesProducto
                 .AnyAsync(v => v.SKU.ToLower() == sku.ToLower() && v.FechaEliminacion == null);
         }
+
+        public async Task<bool> ExisteSkuBaseAsync(string skuBaseNormalizado)
+        {
+            // Comparación EXACTA sobre la columna SkuBase del producto (ya normalizada al guardar).
+            // El filtro global de soft-delete ya excluye productos eliminados; lo dejamos explícito.
+            return await _context.Productos
+                .AnyAsync(p => p.SkuBase == skuBaseNormalizado && p.FechaEliminacion == null);
+        }
         public async Task<IEnumerable<Producto>> ObtenerProductosMaestrosAsync()
         {
             return await _context.Productos
